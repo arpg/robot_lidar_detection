@@ -121,7 +121,6 @@ namespace robot_lidar_detection
     private:
 
       std::string vehicle_name_;
-      float estop_seconds_;
       float slowdown_seconds_;
       float intensity_LT_threshold_;
       float intensity_GT_threshold_;
@@ -137,9 +136,7 @@ namespace robot_lidar_detection
       float entrance_z_max_;
 
       bool entrance_flag = 1;
-      bool estop_flag = 0;
       bool slowdown_flag = 0;
-      int estop_timer = 0;
       int slowdown_timer = 0;
       
 

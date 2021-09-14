@@ -24,12 +24,10 @@ namespace robot_lidar_detection
         sub_pcl = nh.subscribe("pcl_in", 1, &RobotLidarDetectionNodelet::pcl_cb, this);
         sub_odom = nh.subscribe("odom_in", 1, &RobotLidarDetectionNodelet::odom_cb, this);
         
-
         // Publish Point Cloud
         pub_pcl_1    = private_nh.advertise<PointCloud>("cloud_hi_intensity/raw", 10);
         pub_pcl_2    = private_nh.advertise<PointCloud>("cloud_hi_intensity/filtered", 10);
         pub_dist     = private_nh.advertise<std_msgs::Float32>("robot_distance", 10);
-        pub_estop    = private_nh.advertise<std_msgs::Bool>("estop", 10);
         pub_slowdown = private_nh.advertise<std_msgs::Bool>("slowdown", 10);
     };
 
@@ -37,7 +35,6 @@ namespace robot_lidar_detection
     {
         config_ = config;
 
-        estop_seconds_              = config.estop_seconds;
         slowdown_seconds_           = config.slowdown_seconds;
         intensity_LT_threshold_     = config.intensity_LT_threshold;
         intensity_GT_threshold_     = config.intensity_GT_threshold;
@@ -131,25 +128,9 @@ namespace robot_lidar_detection
             }
         }
 
-        if(distance_min > min_distance_ && distance_min < max_distance_ && !estop_flag && !slowdown_flag && !entrance_flag)
+        if(distance_min > min_distance_ && distance_min < max_distance_ && !slowdown_flag && !entrance_flag)
         {
-            estop_flag = true;
-            slowdown_flag = false;
-
-            std_msgs::Bool estop;
-            estop.data = true;
-            pub_estop.publish(estop);
-        }
-
-        if(estop_timer >= 20 * estop_seconds_)
-        {
-            estop_flag = false;
             slowdown_flag = true;
-            estop_timer = 0;
-
-            std_msgs::Bool estop;
-            estop.data = false;
-            pub_estop.publish(estop);
 
             std_msgs::Bool slowdown;
             slowdown.data = true;
@@ -158,7 +139,6 @@ namespace robot_lidar_detection
 
         if(slowdown_timer >= 20 * slowdown_seconds_)
         {
-            estop_flag = false;
             slowdown_flag = false;
             slowdown_timer = 0;
             
@@ -167,22 +147,12 @@ namespace robot_lidar_detection
             pub_slowdown.publish(slowdown);
         }
 
-        if(estop_flag)
-        {
-            estop_timer++;
-        }
-
         if(slowdown_flag)
         {
             slowdown_timer++;
         }
 
-        ROS_INFO("DISTANCE [m]: %.3f // ESTOP %i  %i // SLOWDOWN %i  %i", distance_min, estop_flag, estop_timer, slowdown_flag, slowdown_timer);
-        // std::cout << estop_flag << " / " << slowdown_flag << " / " << estop_timer << " / " << slowdown_timer ...
-        //           << " / " traveled_distance ...
-        //           << " / " << odom_x << " / " << odom_y << " / "  << " / " <<  ...
-        //           << " / " << odom_estop_x << " / " << odom_estop_u << " / " << " / " std::endl;
-        
+        ROS_INFO("DISTANCE [m]: %.3f // SLOWDOWN %i  %i", distance_min, slowdown_flag, slowdown_timer);        
     };
 }
 
