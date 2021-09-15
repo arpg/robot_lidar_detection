@@ -100,11 +100,11 @@ namespace robot_lidar_detection
             pub_pcl_2.publish (cloud_ror);
         }
 
-        float distance_min;
-        float distance_sq;
-        float distance_sq_last;
-        float distance_sq_min;
-        float traveled_distance;
+        float distance_min = 0;
+        float distance_sq = 0;
+        float distance_sq_last = 0;
+        float distance_sq_min = 0;
+        float traveled_distance = 0;
         // Assign original xyz data to normal estimate cloud (this is necessary because by default the xyz fields are empty)
 
         if(cloud_ror->points.size() > 0)
@@ -137,7 +137,7 @@ namespace robot_lidar_detection
             pub_slowdown.publish(slowdown);
         }
 
-        if(slowdown_timer >= 20 * slowdown_seconds_)
+        if(distance_min < min_distance_ && slowdown_timer >= 20 * slowdown_seconds_)
         {
             slowdown_flag = false;
             slowdown_timer = 0;
